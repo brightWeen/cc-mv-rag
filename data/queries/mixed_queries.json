@@ -1,0 +1,135 @@
+[
+  {
+    "query_id": "q_semantic_001",
+    "query": "什么是深度学习框架？",
+    "relevant_docs": ["doc_framework_001", "doc_framework_002"],
+    "query_type": "semantic",
+    "expected_best": "dense"
+  },
+  {
+    "query_id": "q_semantic_002",
+    "query": "人工智能芯片推荐",
+    "relevant_docs": ["product_005", "product_006"],
+    "query_type": "semantic",
+    "expected_best": "dense"
+  },
+  {
+    "query_id": "q_semantic_003",
+    "query": "适合 AI 训练的 GPU",
+    "relevant_docs": ["product_003", "product_004", "product_005", "product_006"],
+    "query_type": "semantic",
+    "expected_best": "dense"
+  },
+  {
+    "query_id": "q_exact_001",
+    "query": "iPhone 15 Pro Max 256GB",
+    "relevant_docs": ["product_001"],
+    "query_type": "product_model",
+    "expected_best": "es_fulltext"
+  },
+  {
+    "query_id": "q_exact_002",
+    "query": "RTX 4090 24GB",
+    "relevant_docs": ["product_003"],
+    "query_type": "specification",
+    "expected_best": "es_fulltext"
+  },
+  {
+    "query_id": "q_exact_003",
+    "query": "NVIDIA H100 80GB",
+    "relevant_docs": ["product_005"],
+    "query_type": "specification",
+    "expected_best": "es_fulltext"
+  },
+  {
+    "query_id": "q_exact_004",
+    "query": "BERT GPT",
+    "relevant_docs": ["doc_nlp_001", "doc_nlp_002"],
+    "query_type": "acronym",
+    "expected_best": "es_fulltext"
+  },
+  {
+    "query_id": "q_exact_005",
+    "query": "\"深度学习框架\"",
+    "relevant_docs": ["doc_framework_001", "doc_framework_002"],
+    "query_type": "exact_phrase",
+    "expected_best": "es_fulltext"
+  },
+  {
+    "query_id": "q_exact_006",
+    "query": "PyTorch TensorFlow",
+    "relevant_docs": ["doc_framework_001", "doc_framework_002"],
+    "query_type": "keyword",
+    "expected_best": "es_fulltext"
+  },
+  {
+    "query_id": "q_exact_007",
+    "query": "Ryzen 9 7950X",
+    "relevant_docs": ["product_007"],
+    "query_type": "specification",
+    "expected_best": "es_fulltext"
+  },
+  {
+    "query_id": "q_hybrid_001",
+    "query": "英伟达 AI 芯片 H100",
+    "relevant_docs": ["product_005"],
+    "query_type": "hybrid",
+    "expected_best": "hybrid"
+  },
+  {
+    "query_id": "q_hybrid_002",
+    "query": "苹果 5G 手机推荐",
+    "relevant_docs": ["product_001", "product_002"],
+    "query_type": "hybrid",
+    "expected_best": "hybrid"
+  },
+  {
+    "query_id": "q_hybrid_003",
+    "query": "深度学习框架 PyTorch",
+    "relevant_docs": ["doc_framework_001"],
+    "query_type": "hybrid",
+    "expected_best": "hybrid"
+  },
+  {
+    "query_id": "q_hybrid_004",
+    "query": "RTX 40 系列显卡对比",
+    "relevant_docs": ["product_003", "product_004"],
+    "query_type": "hybrid",
+    "expected_best": "hybrid"
+  },
+  {
+    "query_id": "q_hybrid_005",
+    "query": "专业相机推荐 8K",
+    "relevant_docs": ["product_011", "product_012"],
+    "query_type": "hybrid",
+    "expected_best": "hybrid"
+  },
+  {
+    "query_id": "q_wildcard_001",
+    "query": "RTX*",
+    "relevant_docs": ["product_003", "product_004"],
+    "query_type": "wildcard",
+    "expected_best": "es_fulltext"
+  },
+  {
+    "query_id": "q_fuzzy_001",
+    "query": "intell core",
+    "relevant_docs": ["product_008"],
+    "query_type": "fuzzy",
+    "expected_best": "es_fulltext"
+  },
+  {
+    "query_id": "q_fuzzy_002",
+    "query": "Samgung",
+    "relevant_docs": ["product_009"],
+    "query_type": "fuzzy",
+    "expected_best": "es_fulltext"
+  },
+  {
+    "query_id": "q_phrase_001",
+    "query": "\"Transformers\"",
+    "relevant_docs": ["doc_nlp_001", "doc_nlp_002"],
+    "query_type": "exact_phrase",
+    "expected_best": "es_fulltext"
+  }
+]

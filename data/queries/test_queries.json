@@ -1,0 +1,102 @@
+[
+  {
+    "query_id": "q_001",
+    "query": "什么是人工智能？",
+    "relevant_docs": [
+      "doc_001"
+    ],
+    "query_type": "factual"
+  },
+  {
+    "query_id": "q_002",
+    "query": "机器学习有哪些类型？",
+    "relevant_docs": [
+      "doc_002"
+    ],
+    "query_type": "factual"
+  },
+  {
+    "query_id": "q_003",
+    "query": "深度学习和机器学习的区别",
+    "relevant_docs": [
+      "doc_002",
+      "doc_003"
+    ],
+    "query_type": "comparison"
+  },
+  {
+    "query_id": "q_004",
+    "query": "自然语言处理有哪些应用",
+    "relevant_docs": [
+      "doc_004"
+    ],
+    "query_type": "application"
+  },
+  {
+    "query_id": "q_005",
+    "query": "CNN 是什么？",
+    "relevant_docs": [
+      "doc_003",
+      "doc_005"
+    ],
+    "query_type": "technical"
+  },
+  {
+    "query_id": "q_006",
+    "query": "强化学习的应用场景",
+    "relevant_docs": [
+      "doc_006"
+    ],
+    "query_type": "application"
+  },
+  {
+    "query_id": "q_007",
+    "query": "知识图谱有什么用",
+    "relevant_docs": [
+      "doc_007"
+    ],
+    "query_type": "application"
+  },
+  {
+    "query_id": "q_008",
+    "query": "GPT 是大语言模型吗",
+    "relevant_docs": [
+      "doc_008"
+    ],
+    "query_type": "factual"
+  },
+  {
+    "query_id": "q_009",
+    "query": "向量数据库是用来做什么的",
+    "relevant_docs": [
+      "doc_009"
+    ],
+    "query_type": "application"
+  },
+  {
+    "query_id": "q_010",
+    "query": "RAG 技术解决了什么问题",
+    "relevant_docs": [
+      "doc_010"
+    ],
+    "query_type": "factual"
+  },
+  {
+    "query_id": "q_011",
+    "query": "AI 在图像识别中的应用",
+    "relevant_docs": [
+      "doc_005"
+    ],
+    "query_type": "application"
+  },
+  {
+    "query_id": "q_012",
+    "query": "Transformer 模型",
+    "relevant_docs": [
+      "doc_003",
+      "doc_004",
+      "doc_008"
+    ],
+    "query_type": "technical"
+  }
+]
