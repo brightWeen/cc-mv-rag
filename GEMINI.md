@@ -2,15 +2,18 @@
 
 ## Project Overview
 
-This project is a verification framework designed to compare the retrieval performance of **Milvus** (using Hybrid Search with Dense + Sparse vectors) against **Elasticsearch** (using BM25) in a RAG (Retrieval-Augmented Generation) context.
+This project is a verification framework designed to compare the retrieval performance of:
+- **Milvus** (using Hybrid Search with Dense + Sparse vectors)
+- **Elasticsearch** (using BM25)
+- **OceanBase SeekDB** (using built-in Hybrid Search)
 
 The primary goal is to determine if a "Milvus Only" architecture can effectively replace a complex "Milvus + Elasticsearch" dual-database architecture while maintaining high retrieval quality.
 
 **Key Technologies:**
 *   **Language:** Python 3.8+
-*   **Vector Database:** Milvus Lite (local)
+*   **Vector Database:** Milvus Lite (local), OceanBase SeekDB
 *   **Search Engine:** Elasticsearch 8.11.0 (Docker)
-*   **Embedding Model:** ZhipuAI GLM Embedding
+*   **Embedding Model:** ZhipuAI GLM Embedding (embedding-3, 2048-dim)
 *   **Sparse Retrieval:** BM25 (via Milvus Sparse Vector)
 *   **Fusion Algorithms:** RRF (Reciprocal Rank Fusion) and Weighted Fusion
 
@@ -47,7 +50,7 @@ cp .env.example .env
 # Start Milvus Lite (runs as a local process)
 python3 -m milvus
 
-# Start Elasticsearch (if comparing against ES)
+# Start Elasticsearch (optional, for comparison)
 docker run -d \
   --name elasticsearch \
   -p 9200:9200 \
@@ -55,6 +58,12 @@ docker run -d \
   -e "discovery.type=single-node" \
   -e "xpack.security.enabled=false" \
   elasticsearch:8.11.0
+
+# Start SeekDB (optional, for comparison)
+docker run -d \
+  --name seekdb \
+  -p 2881:2881 \
+  oceanbase/seekdb:latest
 ```
 
 ### 3. Execution Workflow
@@ -79,12 +88,18 @@ python3 scripts/04_evaluate.py
 
 Recent analysis (see `outputs/reports/`) has established the following:
 
-1.  **Weighted Fusion > RRF**: For Milvus Hybrid Search, a weighted approach (Dense=0.6, Sparse=0.4) significantly outperforms standard RRF, achieving an NDCG@10 of **0.9198**, comparable to ES+Milvus (0.9398).
-2.  **Milvus Viability**: For most semantic and keyword search scenarios, a Milvus-only architecture is a cost-effective and performant alternative to maintaining a separate ES cluster.
-3.  **ES Edge Cases**: Elasticsearch remains superior for specific query types due to its advanced tokenization and query syntax:
+### Milvus vs ES
+1.  **Weighted Fusion > RRF**: For Milvus Hybrid Search, a weighted approach (Dense=0.6, Sparse=0.4) significantly outperforms standard RRF, achieving an NDCG@10 of **0.9198**.
+2.  **Milvus Viability**: For most semantic and keyword search scenarios, a Milvus-only architecture is a cost-effective and performant alternative.
+3.  **ES Edge Cases**: Elasticsearch remains superior for specific query types:
     *   Wildcard queries (e.g., `RTX*`)
     *   Fuzzy matching/Spell check (e.g., `intell` -> `intel`)
     *   Exact phrase matching with punctuation support.
+
+### Milvus vs SeekDB
+1.  **Fusion Algorithm Impact**: Weighted fusion outperforms RRF by 3-4% in accuracy
+2.  **Performance Gap**: Milvus is 8-10x faster than SeekDB
+3.  **Accuracy Comparison**: Using the same GLM vectors, Milvus RRF achieves ~3-6% higher accuracy than SeekDB RRF
 
 ## Important Files
 
@@ -92,3 +107,4 @@ Recent analysis (see `outputs/reports/`) has established the following:
 *   `VERIFICATION_PLAN.md`: Original plan for the verification task.
 *   `outputs/reports/milvus_vs_es_milvus_summary.md`: Detailed comparison summary.
 *   `outputs/reports/gap_analysis_cases.md`: Analysis of specific cases where ES outperforms Milvus.
+*   `outputs/reports/seekdb_integration/`: SeekDB integration verification report.

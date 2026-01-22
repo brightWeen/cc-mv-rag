@@ -1,6 +1,6 @@
 # Milvus 多路检索验证
 
-验证 Milvus 是否可以替代 Elasticsearch 的文本检索能力。
+验证 Milvus 是否可以替代 Elasticsearch 的文本检索能力，并对比 OceanBase SeekDB 混合检索方案。
 
 ## 目标
 
@@ -9,14 +9,15 @@
 - Sparse 向量关键词检索效果
 - 混合检索 (Hybrid Search) 效果
 - 与 ES BM25 的效果对比
+- 与 SeekDB 混合检索的对比
 
 ## 技术栈
 
-- **Embedding 模型**: GLM Embedding API (智谱 AI)
+- **Embedding 模型**: GLM Embedding API (智谱 AI) - embedding-3 (2048维)
 - **稀疏向量**: BM25 算法
-- **向量数据库**: Milvus Lite (本地)
+- **向量数据库**: Milvus Lite (本地)、OceanBase SeekDB
 - **对比基准**: Elasticsearch + IK 分词器
-- **结果融合**: RRF (Reciprocal Rank Fusion)
+- **结果融合**: RRF (Reciprocal Rank Fusion)、加权融合 (Weighted Fusion)
 
 ## 安装
 
@@ -31,7 +32,7 @@ cp .env.example .env
 # 启动 Milvus Lite
 python3 -m milvus
 
-# 启动 Elasticsearch (Docker)
+# 启动 Elasticsearch (可选，用于对比)
 docker run -d \
   --name elasticsearch \
   -p 9200:9200 \
@@ -39,6 +40,12 @@ docker run -d \
   -e "discovery.type=single-node" \
   -e "xpack.security.enabled=false" \
   elasticsearch:8.11.0
+
+# 启动 SeekDB (可选，用于对比)
+docker run -d \
+  --name seekdb \
+  -p 2881:2881 \
+  oceanbase/seekdb:latest
 ```
 
 ## 使用
@@ -61,13 +68,20 @@ python3 scripts/04_evaluate.py
 
 经过详细对比验证，得出以下核心结论：
 
-1.  **加权融合优于 RRF**: 在 Milvus 单库方案中，使用 **加权融合 (Dense=0.6, Sparse=0.4)** 的效果显著优于 RRF 融合，NDCG@10 达到 **0.9198**，非常接近 ES+Milvus 方案 (0.9398)。
-2.  **Milvus 单库可行性**: 对于绝大多数语义检索和标准关键词匹配场景，**Only Milvus (Weighted)** 方案具备极高的性价比，足以替代 ES。
-3.  **ES 的不可替代性**: 在通配符查询 (`RTX*`)、模糊纠错 (`intell`) 和严格短语匹配等特定场景下，ES 凭借其强大的倒排索引和分词能力仍然具有不可替代的优势。
+### Milvus vs ES
+1.  **加权融合优于 RRF**: 在 Milvus 单库方案中，使用 **加权融合 (Dense=0.6, Sparse=0.4)** 的效果显著优于 RRF 融合，NDCG@10 达到 **0.9198**。
+2.  **Milvus 单库可行性**: 对于绝大多数语义检索和标准关键词匹配场景，**Only Milvus (Weighted)** 方案具备极高的性价比。
+3.  **ES 的不可替代性**: 在通配符查询 (`RTX*`)、模糊纠错 (`intell`) 和严格短语匹配等特定场景下，ES 具有优势。
+
+### Milvus vs SeekDB
+1.  **融合算法影响**: 加权融合 (Weighted) 比 RRF 融合准确率高约 3-4%
+2.  **性能差距**: Milvus 执行速度约为 SeekDB 的 8-10 倍
+3.  **准确率对比**: 使用相同 GLM 向量，Milvus RRF 比 SeekDB RRF 高约 3-6%
 
 **详细报告:**
-- 📄 [汇总对比报告 (Summary Report)](outputs/reports/milvus_vs_es_milvus_summary.md)
-- 🔍 [差距分析报告 (Gap Analysis)](outputs/reports/gap_analysis_cases.md)
+- 📄 [Milvus vs ES 汇总报告](outputs/reports/milvus_vs_es_milvus_summary.md)
+- 🔍 [差距分析报告](outputs/reports/gap_analysis_cases.md)
+- 🔬 [SeekDB 集成验证报告](outputs/reports/seekdb_integration/)
 
 ## 项目结构
 

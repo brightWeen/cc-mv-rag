@@ -1,7 +1,7 @@
 # Milvus 多路检索验证执行计划
 
 ## 验证目标
-验证 Milvus Dense + Sparse 混合检索是否可以替代 ES 的文本检索能力。
+验证 Milvus Dense + Sparse 混合检索是否可以替代 ES 的文本检索能力，并对比 OceanBase SeekDB 混合检索方案。
 
 ## 环境状态检查
 
@@ -95,6 +95,7 @@ python3 scripts/04_evaluate.py
 | Sparse (BM25) | 0.9194 | 0.8392 | 0.8427 | 0.8226 | 单独关键词检索 |
 | Hybrid (RRF) | 0.9677 | 0.8602 | 0.8820 | 0.8461 | RRF 融合 (k=60) |
 | **Hybrid (Weighted)** | **1.0000** | **0.9019** | **0.9198** | **0.8841** | **加权融合 (Dense 0.6)** |
+| **SeekDB Hybrid (RRF)** | **0.9032** | **0.8387** | **0.8527** | **0.8302** | **SeekDB 内置 RRF** |
 | ES BM25 | 0.9194 | 0.8750 | 0.8622 | 0.8401 | ES 基准 |
 | **ES + Milvus** | **1.0000** | **0.9310** | **0.9398** | **0.9106** | **性能天花板** |
 
@@ -111,7 +112,15 @@ python3 scripts/04_evaluate.py
 - [x] 验证 Milvus 是否可以替代 ES
     - **结论**: **可行**。在非特定语法（通配符/模糊匹配）场景下，Milvus 单库方案完全可以替代 ES。
 
-### 3. 不同场景表现
+### 3. SeekDB 集成验证
+- [x] SeekDB 混合检索效果
+    - **结论**: SeekDB RRF (0.8527) 低于 Milvus RRF (0.8820)，差距约 3-6%。
+- [x] SeekDB 性能表现
+    - **结论**: SeekDB 查询延迟约为 Milvus 的 8-10 倍 (~1.6s vs ~170ms)。
+- [x] SeekDB 易用性
+    - **结论**: SeekDB 内置 hybrid_search API，使用简单，但只支持 RRF 融合。
+
+### 4. 不同场景表现
 - [x] 语义查询（如 "什么是 AI"）-> Dense 应表现好
 - [x] 关键词查询（如 "CNN GPT"）-> Sparse 应表现好
 - [x] 混合查询 -> Hybrid 应表现最好
