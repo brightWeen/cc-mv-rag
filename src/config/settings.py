@@ -37,6 +37,23 @@ class ESConfig(BaseModel):
     verify_certs: bool = False
 
 
+class SeekDBConfig(BaseModel):
+    """OceanBase SeekDB 配置"""
+    # 服务器模式配置
+    use_server: bool = False
+    host: str = "localhost"
+    port: int = 2881
+    user: str = "root"
+    password: str = ""
+    # GLM Embedding 配置
+    use_glm_embedding: bool = True
+    glm_model: str = "embedding-3"
+    # 嵌入式模式配置
+    db_path: str = "seekdb.db"
+    collection_name: str = "doc_chunks"
+    embedding_function: str = "default"
+
+
 class ChunkingConfig(BaseModel):
     """文档分块配置"""
     chunk_size: int = 512
@@ -93,6 +110,7 @@ class Config(BaseModel):
     glm: GLMConfig
     milvus: MilvusConfig = Field(default_factory=MilvusConfig)
     elasticsearch: ESConfig = Field(default_factory=ESConfig)
+    seekdb: SeekDBConfig = Field(default_factory=SeekDBConfig)
     chunking: ChunkingConfig = Field(default_factory=ChunkingConfig)
     search: SearchConfig = Field(default_factory=SearchConfig)
     evaluation: EvaluationConfig = Field(default_factory=EvaluationConfig)

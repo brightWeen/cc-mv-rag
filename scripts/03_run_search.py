@@ -21,8 +21,10 @@ from src.models.dense_embedding import GLMEmbedding
 from src.models.sparse_embedding import BM25Sparse
 from src.search.hybrid_search import HybridSearcher
 from src.search.es_mv_hybrid import ESMVHybridSearcher
+from src.search.seekdb_hybrid import SeekDBHybridSearcher
 from src.database.milvus_client import MilvusClient
 from src.database.es_client import ESClient
+from src.database.seekdb_client import SeekDBClient
 
 
 def load_queries(data_path: Path) -> list:
@@ -209,6 +211,41 @@ def es_mv_hybrid_search(
     return results
 
 
+def seekdb_hybrid_search(
+    seekdb_searcher: SeekDBHybridSearcher,
+    queries: list,
+    top_k: int,
+    fusion_method: str = "rrf"  # SeekDB 只支持 RRF 融合
+) -> Dict[str, List[str]]:
+    """执行 SeekDB 混合检索"""
+    logger.info("=" * 50)
+    logger.info(f"执行 SeekDB 混合检索 (融合方法: {fusion_method})")
+    logger.info("=" * 50)
+
+    results = {}
+
+    for query_item in tqdm(queries, desc="SeekDB Hybrid (RRF) 检索"):
+        query_id = query_item["query_id"]
+        query_text = query_item["query"]
+
+        try:
+            # 执行混合检索
+            search_results = seekdb_searcher.hybrid_search(
+                query_text=query_text,
+                top_k=top_k,
+                fusion_method=fusion_method
+            )
+
+            # 保存结果
+            results[query_id] = [r.doc_id for r in search_results]
+        except Exception as e:
+            logger.warning(f"SeekDB 混合检索失败 {query_id}: {e}")
+            results[query_id] = []
+
+    logger.info(f"SeekDB 混合检索完成: {len(results)} 个查询")
+    return results
+
+
 def save_results(results: dict, output_path: Path):
     """保存检索结果"""
     with open(output_path, "w", encoding="utf-8") as f:
@@ -309,6 +346,34 @@ def main():
         logger.warning(f"无法连接 Elasticsearch: {e}")
         logger.warning("将跳过 ES 相关检索")
 
+    # 初始化 SeekDB（可选）
+    seekdb_searcher = None
+    if "--seekdb" in sys.argv:
+        try:
+            logger.info("连接 SeekDB...")
+            seekdb_client = SeekDBClient(
+                db_path=config.seekdb.db_path,
+                collection_name=config.seekdb.collection_name,
+                host=config.seekdb.host,
+                port=config.seekdb.port,
+                user=config.seekdb.user,
+                password=config.seekdb.password,
+                use_server=config.seekdb.use_server,
+                glm_api_key=config.glm.api_key,
+                glm_model=config.seekdb.glm_model,
+                use_glm_embedding=config.seekdb.use_glm_embedding,
+            )
+            collection_seekdb = seekdb_client.get_collection()
+
+            # 初始化 SeekDB 混合检索器
+            seekdb_searcher = SeekDBHybridSearcher(collection=collection_seekdb)
+            logger.info("SeekDB 混合检索器初始化完成")
+        except Exception as e:
+            logger.warning(f"无法连接 SeekDB: {e}")
+            logger.warning("将跳过 SeekDB 检索")
+    else:
+        logger.info("跳过 SeekDB 检索（使用 --seekdb 参数启用）")
+
     # 执行检索
     top_k = config.search.default_top_k
     all_results = {}
@@ -350,6 +415,13 @@ def main():
             es_mv_searcher, dense_model, queries, top_k, fusion_method="rrf"
         )
         save_results(all_results["es_mv_hybrid_rrf"], output_dir / "es_mv_hybrid_rrf_results.json")
+
+    # SeekDB 混合检索（使用内置 RRF 融合）
+    if seekdb_searcher:
+        all_results["seekdb_hybrid_rrf"] = seekdb_hybrid_search(
+            seekdb_searcher, queries, top_k, fusion_method="rrf"
+        )
+        save_results(all_results["seekdb_hybrid_rrf"], output_dir / "seekdb_hybrid_rrf_results.json")
 
     # 关闭 ES 连接
     if es_client:

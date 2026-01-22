@@ -4,6 +4,7 @@
 pymilvus>=2.4.0
 elasticsearch>=8.0.0
 zhipuai>=2.0.0
+pyseekdb>=0.1.0
 
 # 文本处理
 numpy>=1.24.0

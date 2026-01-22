@@ -27,6 +27,22 @@ elasticsearch:
   index_name: "doc_chunks"
   verify_certs: false
 
+# OceanBase SeekDB 配置
+seekdb:
+  # 服务器模式配置（用于 macOS/Windows）
+  use_server: true
+  host: "localhost"
+  port: 2881
+  user: "root"
+  password: ""
+  # GLM Embedding 配置
+  use_glm_embedding: true  # true=使用GLM, false=使用内置embedding
+  glm_model: "embedding-3"
+  # 嵌入式模式配置（仅 Linux，use_server=false 时使用）
+  db_path: "seekdb.db"
+  collection_name: "doc_chunks"
+  embedding_function: "default"
+
 # 文档分块配置
 chunking:
   chunk_size: 512

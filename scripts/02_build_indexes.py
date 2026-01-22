@@ -21,6 +21,7 @@ from src.models.sparse_embedding import BM25Sparse
 from src.pipeline.chunker import DocumentChunker
 from src.database.milvus_client import MilvusClient
 from src.database.es_client import ESClient
+from src.database.seekdb_client import SeekDBClient
 
 
 def load_documents(data_path: Path) -> list:
@@ -184,6 +185,62 @@ def build_es_index(config, chunks: list):
     return es_client
 
 
+def build_seekdb_index(config, chunks: list):
+    """构建 SeekDB 索引"""
+    logger.info("=" * 50)
+    logger.info("开始构建 SeekDB 索引")
+    logger.info("=" * 50)
+
+    try:
+        # 初始化 SeekDB 客户端（根据配置自动选择嵌入式或服务器模式）
+        seekdb_client = SeekDBClient(
+            db_path=config.seekdb.db_path,
+            collection_name=config.seekdb.collection_name,
+            host=config.seekdb.host,
+            port=config.seekdb.port,
+            user=config.seekdb.user,
+            password=config.seekdb.password,
+            use_server=config.seekdb.use_server,
+            glm_api_key=config.glm.api_key,
+            glm_model=config.seekdb.glm_model,
+            use_glm_embedding=config.seekdb.use_glm_embedding,
+        )
+
+        # 创建 Collection
+        seekdb_client.create_collection(drop_existing=True)
+
+        # 准备数据（不需要生成向量）
+        chunk_ids = [chunk.chunk_id for chunk in chunks]
+        doc_ids = [chunk.doc_id for chunk in chunks]
+        titles = [chunk.title for chunk in chunks]
+        contents = [chunk.content for chunk in chunks]
+
+        # 插入 SeekDB（自动生成向量）
+        logger.info("正在插入数据到 SeekDB...")
+        seekdb_client.insert_data(
+            ids=chunk_ids,
+            doc_ids=doc_ids,
+            chunk_ids=chunk_ids,
+            titles=titles,
+            contents=contents,
+            metadata_list=[chunk.metadata for chunk in chunks]
+        )
+
+        # 获取统计信息
+        stats = seekdb_client.get_stats()
+        logger.info(f"SeekDB 索引构建完成: {stats}")
+
+        seekdb_client.disconnect()
+
+        return seekdb_client
+    except Exception as e:
+        logger.error(f"SeekDB 索引构建失败: {e}")
+        logger.warning("请确保:")
+        logger.warning("  1. pyseekdb 已正确安装: pip install pyseekdb")
+        logger.warning("  2. SeekDB 服务器正在运行（服务器模式）")
+        return None
+
+
 def save_chunks(chunks: list, output_path: Path):
     """保存分块数据"""
     chunks_data = [chunk.to_dict() for chunk in chunks]
@@ -274,6 +331,12 @@ def main():
 
     # 构建 ES 索引
     es_client = build_es_index(config, chunks)
+
+    # 构建 SeekDB 索引（可选）
+    if "--seekdb" in sys.argv or "--all" in sys.argv:
+        seekdb_client = build_seekdb_index(config, chunks)
+    else:
+        logger.info("跳过 SeekDB 索引构建（使用 --seekdb 参数启用）")
 
     logger.info("=" * 50)
     logger.info("索引构建完成！")

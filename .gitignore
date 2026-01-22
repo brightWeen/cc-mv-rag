@@ -54,3 +54,4 @@ outputs/results/*
 !outputs/results/.gitkeep
 outputs/reports/*
 !outputs/reports/.gitkeep
+venv311/
